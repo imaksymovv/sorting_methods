@@ -2,70 +2,99 @@
 #include <algorithm>
 #include <vector>
 
-void merge(std::vector<int>& arr, int low, int mid, int high) {
-  std::vector<int> temp(high - low + 1);
-  int i = low;
-  int j = mid + 1;
-  int k = 0;
-
-  while (i <= mid && j <= high) {
-    if (arr[i] < arr[j]) {
-      temp[k] = arr[i];
-      i++;
-    } else {
-      temp[k] = arr[j];
-      j++;
+void merge(std::vector<int>& arr) {
+  if (arr.size() == 1) {
+    return;
+  } else if (arr.size() <= 2) {
+    auto m = arr.begin();
+    if (*m > *(m + 1)) {
+      std::swap(*m, *(m + 1));
     }
-    k++;
-  }
-
-  while (i <= mid) {
-    temp[k] = arr[i];
-    k++;
-    i++;
-  }
-
-  while (j <= high) {
-    temp[k] = arr[j];
-    k++;
-    j++;
-  }
-
-  for (size_t i = low; i <= high; i++) {
-    arr[i] = temp[i - low];
-  }
-}
-
-void mergeSort(std::vector<int>& arr, int low, int high) {
-  if (low >= high) {
     return;
   }
-  int mid = low + (high - low) / 2;
-
-  mergeSort(arr, low, mid);
-  mergeSort(arr, mid + 1, high);
-
-  merge(arr, low, mid, high);
-}
-
-int separation(std::vector<int>& arr, int low, int high) {
-  int pivot = arr[high];
-  int j = low - 1;
-  for (size_t i = low; i < high; i++) {
-    if (arr[i] < pivot) {
+  int n = arr.size();
+  std::vector<int> left(n % 2 + n / 2);
+  std::vector<int> right(n / 2);
+  auto i = arr.begin();
+  auto j = left.begin();
+  auto k = right.begin();
+  for (i; j < left.end(); i++) {
+    *j = *i;
+    j++;
+  }
+  for (i; i < arr.end(); i++) {
+   *k = *i;
+    k++;
+  }
+  merge(left);
+  merge(right);
+  j = left.begin();
+  k = right.begin();
+  for (auto i = arr.begin(); i < arr.end(); i++) {
+    if (j < left.end() && k < right.end() && *j < *k) {
+      *i = *j;
       j++;
-      std::swap(arr[i], arr[j]);
+    } else if (k < right.end()) {
+      *i = *k;
+      k++;
+    } else if (j < left.end()) {
+      *i = *j;
+      j++;
     }
   }
-  std::swap(arr[j + 1], arr[high]);
-  return j + 1;
 }
 
-void QuickSort(std::vector<int>& arr, int low, int high) {
-  if (low < high) {
-    int pivot_index = separation(arr, low, high);
-    QuickSort(arr, low, pivot_index - 1);
-    QuickSort(arr, pivot_index + 1, high);
+void sort(std::vector<int>& arr) {
+  int n = arr.size();
+  if (n < 2) {
+    return;
+  } else if (n == 2) {
+    auto m = arr.begin();
+    std::swap(*m, *(m + 1));
+    return;
+  }
+  std::vector<int> left;
+  std::vector<int> right;
+  int left_size = 0;
+  int right_size = 0;
+  auto pivot = arr.end() - 1;
+  auto i = arr.begin();
+  for (i; i < arr.end() - 1; i++) {
+    if (*pivot > *i) {
+      left_size++;
+    } else {
+      right_size++;
+    }
+  }
+  left.resize(left_size);
+  right.resize(right_size);
+  auto j = left.begin();
+  auto k = right.begin();
+  for (i = arr.begin(); i < arr.end(); i++) {
+    if (j < left.end() && k < right.end() && *i < *pivot) {
+      *j = *i;
+      j++;
+    } else if (*i != *pivot) {
+      *k = *i;
+      k++;
+    }
+  }
+  if (left_size != 0) {
+    sort(left);
+  }
+  if (right_size != 0) {
+    sort(right);
+  }
+  j = left.begin();
+  k = right.begin();
+  for (i = arr.begin(); j < left.end(); i++) {
+    *i = *j;
+    j++;
+  }
+  *i = *pivot;
+  for (i = arr.begin() + left.size() + 1; i < arr.end(); i++) {
+    *i = *k;
+    k++;
   }
 }
 
@@ -81,121 +110,136 @@ int main() {
   memory.resize(n);
   iterations = (n * (n + 1)) / 2;
   std::cout << "\nnow input array characters: ";
-  for (size_t i = 0; i < n; i++) {
-    std::cin >> arr[i];
-    memory[i] = arr[i];
+  auto m = memory.begin();
+  auto i = arr.begin();
+  for (i; i < arr.end(); i++) {
+    std::cin >> *i;
+    *m = *i;
+    m++;
   }
   std::cout << "\nbubble sort\n";
   do {
-    for (size_t i = 0; i + 1 < n; i++) {
-      if (arr[i] > arr[i + 1]) {
-        std::swap(arr[i], arr[i + 1]);
+    for (i = arr.begin(); i + 1 < arr.end(); i++) {
+      if (*i > *(i + 1)) {
+        std::swap(*i, *(i + 1));
       }
     }
     counter++;
   } while (counter != iterations);
   counter = 0;
-  for (size_t i = 0; i < n; i++) {
-    std::cout << arr[i];
+  for (i = arr.begin(); i < arr.end(); i++) {
+    std::cout << *i;
   }
-  for (size_t i = 0; i < n; i++) {
-    arr[i] = memory[i];
+  m = memory.begin();
+  for (i = arr.begin(); i < arr.end(); i++) {
+    *i = *m;
+    m++;
   }
 
   std::cout << "\nshaker sort\n";
-  size_t left_border = 0;
-  size_t right_border = n-1;
+  auto left_border = arr.begin();
+  auto right_border = arr.end()-1;
   while (left_border < right_border) {
-    for (size_t i = left_border; i < right_border; i++) {
-      if (arr[i] > arr[i + 1]) {
-        std::swap(arr[i], arr[i + 1]);
+    for (i = left_border; i < right_border; i++) {
+      if (*i > *(i + 1)) {
+        std::swap(*i, *(i + 1));
       }
     }
     right_border--;
 
-    for (size_t i = right_border; i > left_border; i--) {
-      if (arr[i] < arr[i - 1]) {
-        std::swap(arr[i], arr[i - 1]);
+    for (i = right_border; i > left_border; i--) {
+      if (*i < *(i - 1)) {
+        std::swap(*i, *(i - 1));
       }
     }
     left_border++;
   }
 
-  for (size_t i = 0; i < n; i++) {
-    std::cout << arr[i];
+  for (i = arr.begin(); i < arr.end(); i++) {
+    std::cout << *i;
   }
-  for (size_t i = 0; i < n; i++) {
-    arr[i] = memory[i];
+  m = memory.begin();
+  for (i = arr.begin(); i < arr.end(); i++) {
+    *i = *m;
+    m++;
   }
 
   std::cout << "\ncomb sort\n";
   size_t distance = n - 1;
   while (distance >= 1) {
-    for (int i = 0; i + distance < n; i++) {
-      if (arr[i] > arr[i + distance]) {
-        std::swap(arr[i], arr[i + distance]);
+    for (i = arr.begin(); i + distance < arr.end(); i++) {
+      if (*i > *(i + distance)) {
+        std::swap(*i, *(i + distance));
       }
     }
     distance--;
   }
 
-  for (size_t i = 0; i < n; i++) {
-    std::cout << arr[i];
+  for (i = arr.begin(); i < arr.end(); i++) {
+    std::cout << *i;
   }
-  for (size_t i = 0; i < n; i++) {
-    arr[i] = memory[i];
+  m = memory.begin();
+  for (i = arr.begin(); i < arr.end(); i++) {
+    *i = *m;
+    m++;
   }
   
   std::cout << "\ninsertion sort\n";
-  for (size_t i = 1; i < n; i++) {
-    int number = arr[i];
-    size_t j = i;
-    while (j > 0 && arr[j-1] > number) {
-      arr[j] = arr[j-1];
+  for (i = arr.begin() + 1; i < arr.end(); i++) {
+    int number = *i;
+    auto j = i;
+    while (j > arr.begin() && *(j - 1) > number) {
+      *j = *(j - 1);
       j--;
     }
-    arr[j] = number;
+    *j = number;
   }
   
-  for (size_t i = 0; i < n; i++) {
-    std::cout << arr[i];
+  for (i = arr.begin(); i < arr.end(); i++) {
+    std::cout << *i;
   }
-  for (size_t i = 0; i < n; i++) {
-    arr[i] = memory[i];
+  m = memory.begin();
+  for (i = arr.begin(); i < arr.end(); i++) {
+    *i = *m;
+    m++;
   }
 
   std::cout << "\n";
   std::cout << "insertion by choice" << std::endl;
-  for (size_t i = 0; i < n; i++) {
-    for (size_t j = i + 1; j < n; j++) {
-      if (arr[i] > arr[j]) {
-        std::swap(arr[i], arr[j]);
+  for (auto i = arr.begin(); i < arr.end(); i++) {
+    for (auto j = i + 1; j < arr.end(); j++) {
+      if (*i > *j) {
+        std::swap(*i, *j);
       }
     }
   }
 
-  for (size_t i = 0; i < n; i++) {
-    std::cout << arr[i];
+  for (i = arr.begin(); i < arr.end(); i++) {
+    std::cout << *i;
   }
-  for (size_t i = 0; i < n; i++) {
-    arr[i] = memory[i];
+  m = memory.begin();
+  for (i = arr.begin(); i < arr.end(); i++) {
+    *i = *m;
+    m++;
   }
 
   std::cout << "\nmerge sort\n";
-  mergeSort(arr, 0, n - 1);
+  merge(arr);
 
-  for (size_t i = 0; i < n; i++) {
-    std::cout << arr[i];
+  for (i = arr.begin(); i < arr.end(); i++) {
+    std::cout << *i;
   }
-  for (size_t i = 0; i < n; i++) {
-    arr[i] = memory[i];
+  m = memory.begin();
+  for (i = arr.begin(); i < arr.end(); i++) {
+    *i = *m;
+    m++;
   }
 
   std::cout << "\nquick sort\n";
-  QuickSort(arr, 0, n - 1);
+  sort(arr);
 
-  for (size_t i = 0; i < n; i++) {
-    std::cout << arr[i];
+  for (i = arr.begin(); i < arr.end(); i++) {
+    std::cout << *i;
   }
   return 0;
 }
